@@ -18,8 +18,7 @@ app.include_router(api_router, prefix="/api/v1")
 
 @app.on_event("startup")
 async def startup_event():
-    # Only for development without alembic. 
-    # Use alembic for production migrations!
+    # Automatically sync models for dev (switch to Alembic for prod)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
