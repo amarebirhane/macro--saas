@@ -3,6 +3,11 @@ import { setupGuards } from './guards'
 
 const routes = [
   {
+    path: '/',
+    name: 'landing',
+    component: () => import('../pages/Landing.vue')
+  },
+  {
     path: '/auth',
     component: () => import('../layouts/AuthLayout.vue'),
     children: [
