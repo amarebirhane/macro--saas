@@ -9,6 +9,7 @@ from alembic import context
 from sqlmodel import SQLModel
 from app.core.config import settings
 from app.models.user import User  # Ensure models are registered
+from app.models.audit import AuditLog
 
 # this is the Alembic Config object
 config = context.config
