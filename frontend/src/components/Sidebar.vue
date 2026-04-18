@@ -1,8 +1,8 @@
 <template>
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="logo">⚡</div>
-      <span class="brand-name">Micro-SaaS</span>
+      <img src="/logo.png" alt="Flash-SaaS" class="sidebar-logo" />
+      <span class="brand-name">Flash-SaaS</span>
     </div>
 
     <nav class="nav-groups">
@@ -99,6 +99,12 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.sidebar-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .brand-name {
