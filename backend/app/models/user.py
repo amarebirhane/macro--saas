@@ -23,12 +23,3 @@ class User(UserBase, table=True):
         default_factory=lambda: datetime.now(timezone.utc),
         nullable=False
     )
-
-class UserCreate(UserBase):
-    password: str
-
-class UserUpdate(SQLModel):
-    email: Optional[str] = None
-    password: Optional[str] = None
-    role: Optional[UserRole] = None
-    is_active: Optional[bool] = None
