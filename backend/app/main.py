@@ -11,7 +11,10 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
-from app.api.middleware import GlobalExceptionHandlerMiddleware
+from app.api.middleware import (
+    CorrelationIdMiddleware,
+    GlobalExceptionHandlerMiddleware,
+)
 from app.api.security_middleware import SecurityHeadersMiddleware
 from app.api.routes import admin, auth, users
 from app.core.config import settings
@@ -38,6 +41,7 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Add Middleware
+app.add_middleware(CorrelationIdMiddleware)
 app.add_middleware(GlobalExceptionHandlerMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 
