@@ -21,6 +21,14 @@ class Settings(BaseSettings):
     EMAILS_FROM_EMAIL: Optional[str] = None
     EMAILS_FROM_NAME: Optional[str] = None
 
+    # Cloud Storage (S3)
+    USE_S3: bool = False
+    S3_BUCKET: Optional[str] = None
+    S3_ACCESS_KEY: Optional[str] = None
+    S3_SECRET_KEY: Optional[str] = None
+    S3_REGION: str = "us-east-1"
+    S3_ENDPOINT_URL: Optional[str] = None  # For MinIO or DigitalOcean Spaces
+
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # Observability
