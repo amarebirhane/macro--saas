@@ -1,38 +1,87 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import { setupGuards } from './guards'
+
+const routes = [
+  {
+    path: '/auth',
+    component: () => import('../layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: 'login',
+        name: 'login',
+        component: () => import('../pages/Login.vue')
+      },
+      {
+        path: 'register',
+        name: 'register',
+        component: () => import('../pages/Register.vue')
+      }
+    ]
+  },
+  {
+    path: '/',
+    component: () => import('../layouts/DashboardLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        redirect: { name: 'dashboard' }
+      },
+      {
+        path: 'dashboard',
+        name: 'dashboard',
+        component: () => import('../pages/Dashboard.vue')
+      },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: () => import('../pages/Profile.vue')
+      },
+      {
+        path: 'my-data',
+        name: 'my-data',
+        component: () => import('../pages/MyData.vue')
+      },
+      // Admin Routes
+      {
+        path: 'admin',
+        meta: { requiresAdmin: true },
+        children: [
+          {
+            path: '',
+            name: 'admin-dashboard',
+            component: () => import('../pages/AdminDashboard.vue')
+          },
+          {
+            path: 'users',
+            name: 'admin-users',
+            component: () => import('../pages/UserManagement.vue')
+          },
+          {
+            path: 'analytics',
+            name: 'admin-analytics',
+            component: () => import('../pages/Analytics.vue')
+          }
+        ]
+      }
+    ]
+  },
+  {
+    path: '/403',
+    name: 'error-403',
+    component: () => import('../pages/Error403.vue')
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: { name: 'dashboard' }
+  }
+]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env?.BASE_URL || '/'),
-  routes: [
-    {
-      path: '/auth',
-      component: () => import('../layouts/AuthLayout.vue'),
-      children: [
-        { path: 'login', name: 'login', component: () => import('../pages/Login.vue') },
-        { path: 'register', name: 'register', component: () => import('../pages/Register.vue') }
-      ]
-    },
-    {
-      path: '/',
-      component: () => import('../layouts/MainLayout.vue'),
-      meta: { requiresAuth: true },
-      children: [
-        { path: '', redirect: '/dashboard' },
-        { path: 'dashboard', name: 'dashboard', component: () => import('../pages/Dashboard.vue') }
-      ]
-    }
-  ]
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes
 })
 
-router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore()
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/auth/login')
-  } else if (to.path.startsWith('/auth') && authStore.isAuthenticated) {
-    next('/dashboard')
-  } else {
-    next()
-  }
-})
+setupGuards(router)
 
 export default router
