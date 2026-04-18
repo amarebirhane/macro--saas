@@ -109,6 +109,16 @@ async def reset_password(db: AsyncSession, token: str, new_password: str) -> boo
     return True
 
 
+async def change_password(db: AsyncSession, user: User, old_password: str, new_password: str) -> bool:
+    if not verify_password(old_password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect old password")
+    
+    user.hashed_password = get_password_hash(new_password)
+    db.add(user)
+    await db.commit()
+    return True
+
+
 async def authenticate_user(db: AsyncSession, login_data: LoginRequest) -> Token:
     # Try finding by email
     user = await user_service.get_user_by_email(db, email=login_data.username_or_email)
