@@ -12,11 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
 from app.api.middleware import GlobalExceptionHandlerMiddleware
+from app.api.security_middleware import SecurityHeadersMiddleware
 from app.api.routes import admin, auth, users
 from app.core.config import settings
 from app.core.database import init_db
 from app.core.logging_config import logger, setup_logging
 from app.core.rate_limit import limiter
+from prometheus_fastapi_instrumentator import Instrumentator
 
 # Initialize Logging
 setup_logging()
@@ -37,15 +39,25 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Add Middleware
 app.add_middleware(GlobalExceptionHandlerMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 # CORS configuration
+origins = [
+    settings.FRONTEND_URL,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins if settings.ENVIRONMENT == "production" else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Instrument FastAPI for Prometheus
+Instrumentator().instrument(app).expose(app)
 
 # Static Files (Profile Images)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
