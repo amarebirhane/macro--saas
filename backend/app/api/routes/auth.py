@@ -35,7 +35,11 @@ async def login(
 ):
     token = await auth_service.authenticate_user(db, login_data=login_data)
     # Log login event
-    user = await get_user_by_email(db, email=login_data.email)
+    from app.services.user_service import get_user_by_username
+    user = await get_user_by_email(db, email=login_data.username_or_email)
+    if not user:
+        user = await get_user_by_username(db, username=login_data.username_or_email)
+        
     if user:
         await audit_service.create_log(
             db,
