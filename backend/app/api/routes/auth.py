@@ -11,7 +11,7 @@ from app.schemas.auth import (
     RefreshTokenRequest,
     Token,
 )
-from app.schemas.user import UserCreate, UserRead
+from app.schemas.user import UserRead
 from app.services import auth_service
 from app.services.audit_service import audit_service
 from app.services.user_service import get_user_by_email, get_user_by_username
@@ -29,10 +29,9 @@ async def register(
         await audit_service.create_log(
             db, action="REGISTER", resource=f"user:{user.id}", user_id=user.id
         )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to process image.") from e
+        # Don't fail the request if audit logging fails
+        print(f"Audit log failed: {e}")
     return user
 
 
