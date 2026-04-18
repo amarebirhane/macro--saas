@@ -6,6 +6,46 @@
     </div>
 
     <form @submit.prevent="handleRegister" class="auth-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="reg-first">First Name</label>
+          <input 
+            id="reg-first"
+            type="text" 
+            v-model="firstName" 
+            required 
+            placeholder="John"
+            :disabled="authStore.loading"
+          />
+        </div>
+        <div class="form-group">
+          <label for="reg-last">Last Name</label>
+          <input 
+            id="reg-last"
+            type="text" 
+            v-model="lastName" 
+            required 
+            placeholder="Doe"
+            :disabled="authStore.loading"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reg-username">Username</label>
+        <div class="input-wrapper">
+          <span class="input-prefix">@</span>
+          <input 
+            id="reg-username"
+            type="text" 
+            v-model="username" 
+            required 
+            placeholder="johndoe"
+            :disabled="authStore.loading"
+          />
+        </div>
+      </div>
+
       <div class="form-group">
         <label for="reg-email">Work Email</label>
         <input 
@@ -78,6 +118,9 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
 
+const firstName = ref('')
+const lastName = ref('')
+const username = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
@@ -97,8 +140,20 @@ const handleRegister = async () => {
     return
   }
 
+  // Simple username validation
+  if (!/^[a-z0-9_]{3,20}$/.test(username.value)) {
+    toast.warning('Username must be 3-20 lowercase alphanumeric characters')
+    return
+  }
+
   try {
-    await authStore.register({ email: email.value, password: password.value })
+    await authStore.register({ 
+      first_name: firstName.value,
+      last_name: lastName.value,
+      username: username.value,
+      email: email.value, 
+      password: password.value 
+    })
     toast.success('Welcome aboard! Your session has started.')
     router.push({ name: 'dashboard' })
   } catch (err) {
@@ -125,7 +180,13 @@ const handleRegister = async () => {
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
 .form-group {
@@ -146,8 +207,22 @@ const handleRegister = async () => {
   align-items: center;
 }
 
+.input-prefix {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+#reg-username {
+  padding-left: 1.75rem;
+}
+
 .input-wrapper input {
   width: 100%;
+}
+
+#reg-password {
   padding-right: 3rem;
 }
 
