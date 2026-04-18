@@ -12,7 +12,7 @@ from app.schemas.auth import TokenData
 import uuid
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl=f"/auth/login"
+    tokenUrl=f"/api/v1/auth/login"
 )
 
 async def get_db() -> Generator:
