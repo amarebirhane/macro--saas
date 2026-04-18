@@ -3,11 +3,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import auth, users, admin
 from app.core.config import settings
 from app.core.database import init_db
+from app.core.logging_config import setup_logging
+from app.api.middleware import GlobalExceptionHandlerMiddleware
+
+# Initialize Logging
+setup_logging()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url="/openapi.json"
 )
+
+# Add Middleware
+app.add_middleware(GlobalExceptionHandlerMiddleware)
 
 # CORS configuration
 app.add_middleware(
