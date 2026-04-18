@@ -48,6 +48,12 @@ async def delete_user(
     return None
 
 
+@router.get("/analytics")
+async def get_analytics(
+    db: AsyncSession = Depends(deps.get_session),
+    current_user=Depends(deps.require_role(UserRole.ADMIN)),
+):
+    users = await user_service.get_users(db, limit=1000)
     return {
         "total_users": len(users),
         "active_users": len([u for u in users if u.is_active]),
