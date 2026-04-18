@@ -7,17 +7,26 @@ def setup_logging():
     log_dir = Path("logs")
     log_dir.mkdir(exist_ok=True)
 
-    # Configure JSON formatting
-    from pythonjsonlogger import jsonlogger
+    from app.core.config import settings
     
     logHandler = logging.StreamHandler(sys.stdout)
-    formatter = jsonlogger.JsonFormatter(
-        "%(asctime)s %(levelname)s %(name)s %(funcName)s %(lineno)d %(message)s"
-    )
+    
+    if settings.ENVIRONMENT == "production":
+        from pythonjsonlogger import jsonlogger
+        formatter = jsonlogger.JsonFormatter(
+            "%(asctime)s %(levelname)s %(name)s %(funcName)s %(lineno)d %(message)s"
+        )
+    else:
+        # Human-readable format for development
+        formatter = logging.Formatter(
+            "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S"
+        )
+    
     logHandler.setFormatter(formatter)
     
     fileHandler = logging.FileHandler(log_dir / "app.log")
-    fileFormatter = logging.Formatter("%(asctime)s | %(levelname)-8s | %(name)s:%(funcName)s:%(funcName)s:%(lineno)d - %(message)s")
+    fileFormatter = logging.Formatter("%(asctime)s | %(levelname)-8s | %(name)s:%(funcName)s:%(lineno)d - %(message)s")
     fileHandler.setFormatter(fileFormatter)
 
     # Configure logging
