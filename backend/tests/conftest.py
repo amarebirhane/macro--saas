@@ -8,10 +8,9 @@ from asgi_lifespan import LifespanManager
 
 from app.main import app
 from app.api.deps import get_session
-from app.core.config import settings
 
-# Test database URL (using a different database for tests)
-TEST_DATABASE_URL = settings.DATABASE_URL.replace("/macro", "/macro_test")
+# SQLite for local testing (fast and isolated)
+TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
 # Create a test engine
 test_engine = create_async_engine(TEST_DATABASE_URL, echo=False, future=True)
@@ -54,7 +53,8 @@ async def client(db_session) -> AsyncGenerator[AsyncClient, None]:
     app.dependency_overrides[get_session] = override_get_session
     
     async with LifespanManager(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
             yield ac
             
     app.dependency_overrides.clear()
