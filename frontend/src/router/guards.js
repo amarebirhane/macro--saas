@@ -22,8 +22,13 @@ export const setupGuards = (router) => {
       return next({ name: 'error-403' })
     }
 
-    // 3. Prevent logged-in users from accessing auth pages
+    // 3. Prevent logged-in users from accessing auth pages or Landing (optional)
     if (to.path.startsWith('/auth') && isAuthenticated) {
+      return next({ name: 'dashboard' })
+    }
+    
+    // Redirect to dashboard if logged in and trying to access landing
+    if (to.name === 'landing' && isAuthenticated) {
       return next({ name: 'dashboard' })
     }
 
