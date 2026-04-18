@@ -16,6 +16,7 @@ class UserBase(SQLModel):
     is_active: bool = Field(default=True)
     is_verified: bool = Field(default=False)
     deleted_at: Optional[datetime] = Field(default=None, nullable=True)
+    avatar_url: Optional[str] = Field(default=None, nullable=True)
 
 
 class User(UserBase, table=True):

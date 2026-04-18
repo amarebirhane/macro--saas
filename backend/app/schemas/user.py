@@ -15,6 +15,7 @@ class UserRead(BaseModel):
     last_name: Optional[str] = None
     role: UserRole
     is_active: bool
+    avatar_url: Optional[str] = None
     created_at: datetime
 
     class Config:
@@ -36,6 +37,7 @@ class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     password: Optional[str] = None
+    avatar_url: Optional[str] = None
     is_active: Optional[bool] = None
 
 

@@ -21,6 +21,7 @@ sentry-sdk[fastapi]==1.43.0
 python-json-logger==2.0.7
 black==24.3.0
 ruff==0.3.5
+Pillow==10.2.0
 
 # Testing
 pytest==8.1.1
