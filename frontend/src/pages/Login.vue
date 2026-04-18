@@ -1,96 +1,124 @@
 <template>
-  <div>
-    <h1 class="title">Welcome Back</h1>
-    <p class="subtitle">Sign in to your Micro-SaaS account</p>
-    
-    <form @submit.prevent="handleLogin" class="form">
-      <div class="input-group">
-        <label>Email</label>
-        <input type="email" v-model="email" required placeholder="you@example.com" />
+  <div class="auth-content">
+    <div class="header">
+      <h3>Welcome back</h3>
+      <p>Sign in to access your dashboard</p>
+    </div>
+
+    <form @submit.prevent="handleLogin" class="auth-form">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input 
+          type="email" 
+          v-model="email" 
+          required 
+          placeholder="name@company.com"
+          :disabled="authStore.loading"
+        />
       </div>
-      <div class="input-group">
+
+      <div class="form-group">
         <label>Password</label>
-        <input type="password" v-model="password" required placeholder="••••••••" />
+        <input 
+          type="password" 
+          v-model="password" 
+          required 
+          placeholder="••••••••"
+          :disabled="authStore.loading"
+        />
       </div>
-      <p v-if="error" class="error">{{ error }}</p>
-      
-      <button type="submit" class="btn-primary" :disabled="loading">
-        {{ loading ? 'Signing in...' : 'Sign In' }}
+
+      <div v-if="authStore.error" class="error-msg fade-in">
+        {{ authStore.error }}
+      </div>
+
+      <button type="submit" class="btn btn-primary w-full" :disabled="authStore.loading">
+        <span v-if="authStore.loading">Verifying...</span>
+        <span v-else>Continue</span>
       </button>
     </form>
-    
-    <p class="switch-link">
-      Don't have an account? <router-link to="/auth/register">Sign up</router-link>
-    </p>
+
+    <div class="footer">
+      <p>Don't have an account? <router-link :to="{ name: 'register' }">Create one</router-link></p>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const email = ref('')
 const password = ref('')
-const error = ref('')
-const loading = ref(false)
-
-const router = useRouter()
 const authStore = useAuthStore()
+const router = useRouter()
+const route = useRoute()
 
 const handleLogin = async () => {
   try {
-    loading.value = true
-    error.value = ''
-    await authStore.login(email.value, password.value)
-    router.push('/dashboard')
+    await authStore.login({ email: email.value, password: password.value })
+    const redirectPath = route.query.redirect || { name: 'dashboard' }
+    router.push(redirectPath)
   } catch (err) {
-    error.value = 'Invalid email or password'
-  } finally {
-    loading.value = false
+    // Error handled in store
   }
 }
 </script>
 
 <style scoped>
-.title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-.subtitle {
-  color: var(--text-secondary);
+.header {
   margin-bottom: 2rem;
 }
-.form {
+
+.header h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
-.input-group {
+
+.form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
-.input-group label {
-  font-size: 0.875rem;
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--text-secondary);
 }
-.error {
-  color: var(--error-color);
-  font-size: 0.875rem;
+
+.error-msg {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
-.switch-link {
+
+.w-full { width: 100%; }
+
+.footer {
   margin-top: 2rem;
   text-align: center;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
 }
-.switch-link a {
-  color: var(--accent-color);
-  text-decoration: none;
-}
-.switch-link a:hover {
-  text-decoration: underline;
+
+.footer a {
+  color: var(--accent-primary);
+  font-weight: 500;
 }
 </style>
