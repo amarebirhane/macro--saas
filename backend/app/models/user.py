@@ -6,6 +6,9 @@ from app.models.role import UserRole
 
 class UserBase(SQLModel):
     email: str = Field(unique=True, index=True, nullable=False)
+    username: Optional[str] = Field(default=None, unique=True, index=True)
+    first_name: Optional[str] = Field(default=None)
+    last_name: Optional[str] = Field(default=None)
     role: UserRole = Field(default=UserRole.USER, nullable=False)
     is_active: bool = Field(default=True)
 
