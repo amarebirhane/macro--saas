@@ -68,7 +68,7 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
-const email = ref('')
+const identifier = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const rememberMe = ref(false)
@@ -78,7 +78,7 @@ const route = useRoute()
 
 const handleLogin = async () => {
   try {
-    await authStore.login({ email: email.value, password: password.value }, rememberMe.value)
+    await authStore.login({ username_or_email: identifier.value, password: password.value }, rememberMe.value)
     const redirectPath = route.query.redirect || { name: 'dashboard' }
     router.push(redirectPath)
   } catch (err) {
