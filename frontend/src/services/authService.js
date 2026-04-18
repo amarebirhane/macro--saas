@@ -16,5 +16,10 @@ export const authService = {
   async getMe() {
     const response = await api.get('/auth/me')
     return response.data
+  },
+
+  async refreshToken(refreshToken) {
+    const response = await api.post('/auth/refresh', { refresh_token: refreshToken })
+    return response.data
   }
 }

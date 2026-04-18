@@ -90,4 +90,15 @@ const router = createRouter({
 
 setupGuards(router)
 
+// Dynamic Document Titles
+router.afterEach((to) => {
+  const baseTitle = 'Flash-SaaS'
+  const routeName = to.name ? to.name.toString() : ''
+  const subTitle = routeName 
+    ? routeName.charAt(0).toUpperCase() + routeName.slice(1).replace('-', ' ') 
+    : ''
+  
+  document.title = subTitle ? `${subTitle} | ${baseTitle}` : baseTitle
+})
+
 export default router
