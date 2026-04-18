@@ -39,6 +39,9 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[U
 async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
     db_user = User(
         email=user_in.email,
+        username=user_in.username,
+        first_name=user_in.first_name,
+        last_name=user_in.last_name,
         hashed_password=get_password_hash(user_in.password),
         role=user_in.role
     )
