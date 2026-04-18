@@ -25,7 +25,7 @@ async def test_register_user(client: AsyncClient):
 async def test_login_user(client: AsyncClient):
     """Test user login after registration."""
     # 1. Register
-    await client.post(
+    reg_response = await client.post(
         "/api/v1/auth/register",
         json={
             "email": "login@example.com",
@@ -33,6 +33,7 @@ async def test_login_user(client: AsyncClient):
             "username": "loginuser"
         }
     )
+    assert reg_response.status_code == 201
     
     # 2. Login
     response = await client.post(
