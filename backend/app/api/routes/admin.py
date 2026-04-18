@@ -48,15 +48,30 @@ async def delete_user(
     return None
 
 
-@router.get("/analytics")
-async def get_analytics(
-    db: AsyncSession = Depends(deps.get_session),
-    current_user=Depends(deps.require_role(UserRole.ADMIN)),
-):
-    users = await user_service.get_users(db, limit=1000)
     return {
         "total_users": len(users),
         "active_users": len([u for u in users if u.is_active]),
         "admin_count": len([u for u in users if u.role == UserRole.ADMIN]),
         "user_count": len([u for u in users if u.role == UserRole.USER]),
     }
+
+
+@router.post("/users/{user_id}/reset-password", status_code=status.HTTP_200_OK)
+async def admin_reset_password(
+    user_id: uuid.UUID,
+    new_password: str,
+    db: AsyncSession = Depends(deps.get_session),
+    current_user=Depends(deps.require_role(UserRole.ADMIN)),
+):
+    """
+    Administrative override to reset a user's password.
+    """
+    from app.utils.hashing import get_password_hash
+    db_user = await user_service.get_user_by_id(db, user_id=user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db_user.hashed_password = get_password_hash(new_password)
+    db.add(db_user)
+    await db.commit()
+    return {"message": "User password reset successfully"}
