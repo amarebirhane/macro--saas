@@ -5,6 +5,9 @@ from app.core.config import settings
 from app.core.database import init_db
 from app.core.logging_config import setup_logging
 from app.api.middleware import GlobalExceptionHandlerMiddleware
+from app.core.rate_limit import limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
 
 # Initialize Logging
 setup_logging()
@@ -13,6 +16,10 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url="/openapi.json"
 )
+
+# Add Rate Limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Add Middleware
 app.add_middleware(GlobalExceptionHandlerMiddleware)
