@@ -39,7 +39,7 @@ async def seed_data():
                     hashed_password=get_password_hash(f"password{i}"),
                     role="USER",
                     is_active=True,
-                    created_at=datetime.utcnow() - timedelta(days=i)
+                    created_at=datetime.now() - timedelta(days=i)
                 )
                 session.add(user)
                 print(f"Created User: {user_email}")
