@@ -11,7 +11,7 @@
           <input 
             type="text" 
             v-model="searchQuery" 
-            placeholder="Search by email or ID..." 
+            placeholder="Search by name, username, or email..." 
             class="search-input"
           />
         </div>
@@ -21,8 +21,8 @@
         <table>
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Email</th>
+              <th>User</th>
+              <th>Username</th>
               <th>Role</th>
               <th>Status</th>
               <th>Actions</th>
@@ -30,8 +30,8 @@
           </thead>
           <tbody v-if="loading">
             <tr v-for="i in 5" :key="i">
-              <td><div class="skeleton skeleton-id"></div></td>
-              <td><div class="skeleton skeleton-email"></div></td>
+              <td><div class="skeleton skeleton-user-cell"></div></td>
+              <td><div class="skeleton skeleton-username"></div></td>
               <td><div class="skeleton skeleton-badge"></div></td>
               <td><div class="skeleton skeleton-status"></div></td>
               <td><div class="skeleton skeleton-actions"></div></td>
@@ -39,8 +39,18 @@
           </tbody>
           <tbody v-else-if="filteredUsers.length > 0">
             <tr v-for="user in filteredUsers" :key="user.id" class="user-row">
-              <td class="id-cell">#{{ user.id.slice(0, 8) }}</td>
-              <td class="email-cell">{{ user.email }}</td>
+              <td class="user-cell">
+                <div class="user-info">
+                  <div class="mini-avatar">{{ getInitials(user) }}</div>
+                  <div class="name-email">
+                    <span class="full-name">{{ user.first_name }} {{ user.last_name }}</span>
+                    <span class="email-sub">{{ user.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="username-cell">@{{ user.username || '—' }}</span>
+              </td>
               <td>
                 <span class="badge" :class="user.role">{{ user.role }}</span>
               </td>
@@ -103,15 +113,31 @@ const filteredUsers = computed(() => {
   const q = searchQuery.value.toLowerCase()
   return users.value.filter(u => 
     u.email.toLowerCase().includes(q) || 
+    u.username?.toLowerCase().includes(q) ||
+    u.first_name?.toLowerCase().includes(q) ||
+    u.last_name?.toLowerCase().includes(q) ||
     u.id.toLowerCase().includes(q)
   )
 })
+
+const getInitials = (user) => {
+  if (user.first_name && user.last_name) {
+    return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase()
+  }
+  return user.email[0].toUpperCase()
+}
 
 const fetchUsers = async () => {
   loading.value = true
   try {
     const response = await api.get('/admin/users')
-    users.value = response.data
+    // The backend now returns PaginatedResponse, we need to handle res.data.items or check if it's still returning list
+    // Based on previous finalization, /admin/users returns PaginatedResponse
+    if (response.data && response.data.items) {
+      users.value = response.data.items
+    } else {
+      users.value = response.data
+    }
   } catch (err) {
     toast.error('Failed to fetch users')
     console.error(err)
@@ -177,7 +203,7 @@ onMounted(fetchUsers)
   border: 1px solid var(--border);
   padding: 0.6rem 1rem;
   border-radius: 8px;
-  width: 300px;
+  width: 350px;
   font-size: 0.9rem;
 }
 
@@ -206,7 +232,7 @@ th {
 }
 
 td {
-  padding: 1.25rem 1rem;
+  padding: 1rem;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
@@ -215,14 +241,49 @@ td {
   background: rgba(255, 255, 255, 0.02);
 }
 
-.id-cell {
-  font-family: inherit;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
+.user-cell {
+  min-width: 250px;
 }
 
-.email-cell {
-  font-weight: 500;
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mini-avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--gradient-primary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.name-email {
+  display: flex;
+  flex-direction: column;
+}
+
+.full-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.email-sub {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.username-cell {
+  font-weight: 600;
+  color: var(--accent-primary);
+  font-size: 0.9rem;
 }
 
 .badge {
@@ -321,8 +382,8 @@ td {
 }
 
 .skeleton-text { height: 1rem; width: 100px; }
-.skeleton-id { height: 1.25rem; width: 80px; }
-.skeleton-email { height: 1.25rem; width: 180px; }
+.skeleton-user-cell { height: 2.5rem; width: 200px; }
+.skeleton-username { height: 1.25rem; width: 80px; }
 .skeleton-badge { height: 1.5rem; width: 60px; border-radius: 6px; }
 .skeleton-status { height: 1.25rem; width: 90px; }
 .skeleton-actions { height: 2.25rem; width: 80px; border-radius: 8px; }

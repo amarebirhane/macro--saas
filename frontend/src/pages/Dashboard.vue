@@ -82,7 +82,11 @@ import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
 
 const authStore = useAuthStore()
-const userEmail = computed(() => authStore.user?.email?.split('@')[0] || 'User')
+const userName = computed(() => {
+  if (authStore.user?.first_name) return authStore.user.first_name
+  if (authStore.user?.username) return authStore.user.username
+  return authStore.user?.email?.split('@')[0] || 'User'
+})
 const loading = ref(true)
 
 const stats = ref([
