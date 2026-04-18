@@ -11,6 +11,7 @@ class UserBase(SQLModel):
     last_name: Optional[str] = Field(default=None)
     role: UserRole = Field(default=UserRole.USER, nullable=False)
     is_active: bool = Field(default=True)
+    is_verified: bool = Field(default=False)
 
 class User(UserBase, table=True):
     __tablename__ = "users"
