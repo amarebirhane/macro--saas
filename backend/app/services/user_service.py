@@ -1,58 +1,66 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from typing import List, Optional
+import uuid
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate, UserAdminUpdate
-from app.utils.hashing import get_password_hash
+from app.core.security import get_password_hash
 
-async def get_user_by_email(db: AsyncSession, email: str):
-    result = await db.execute(select(User).where(User.email == email))
+async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
+    statement = select(User).where(User.email == email)
+    result = await db.execute(statement)
     return result.scalars().first()
 
-async def get_user_by_id(db: AsyncSession, user_id: str):
-    result = await db.execute(select(User).where(User.id == user_id))
+async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> Optional[User]:
+    statement = select(User).where(User.id == user_id)
+    result = await db.execute(statement)
     return result.scalars().first()
 
-async def get_all_users(db: AsyncSession):
-    result = await db.execute(select(User))
+async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[User]:
+    statement = select(User).offset(skip).limit(limit)
+    result = await db.execute(statement)
     return result.scalars().all()
 
-async def create_user(db: AsyncSession, user_in: UserCreate, initial_role="USER"):
-    if await get_user_by_email(db, user_in.email):
-        return None
+async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
     db_user = User(
         email=user_in.email,
         hashed_password=get_password_hash(user_in.password),
-        role=initial_role
+        role=user_in.role
     )
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
     return db_user
 
-async def update_user(db: AsyncSession, user: User, user_in: UserUpdate):
-    for field, value in user_in.model_dump(exclude_unset=True).items():
-        if field == "password":
-            user.hashed_password = get_password_hash(value)
-        else:
-            setattr(user, field, value)
+async def update_user(db: AsyncSession, db_user: User, user_in: UserUpdate) -> User:
+    update_data = user_in.model_dump(exclude_unset=True)
+    if "password" in update_data:
+        db_user.hashed_password = get_password_hash(update_data["password"])
+        del update_data["password"]
+    
+    for field, value in update_data.items():
+        setattr(db_user, field, value)
+    
+    db.add(db_user)
     await db.commit()
-    await db.refresh(user)
-    return user
+    await db.refresh(db_user)
+    return db_user
 
-async def admin_update_user(db: AsyncSession, user_id: str, user_in: UserAdminUpdate):
-    user = await get_user_by_id(db, user_id)
-    if not user:
-        return None
-    for field, value in user_in.model_dump(exclude_unset=True).items():
-        setattr(user, field, value)
+async def admin_update_user(db: AsyncSession, db_user: User, user_in: UserAdminUpdate) -> User:
+    update_data = user_in.model_dump(exclude_unset=True)
+    if "password" in update_data:
+        db_user.hashed_password = get_password_hash(update_data["password"])
+        del update_data["password"]
+    
+    for field, value in update_data.items():
+        setattr(db_user, field, value)
+    
+    db.add(db_user)
     await db.commit()
-    await db.refresh(user)
-    return user
+    await db.refresh(db_user)
+    return db_user
 
-async def delete_user(db: AsyncSession, user_id: str):
-    user = await get_user_by_id(db, user_id)
-    if user:
-        await db.delete(user)
-        await db.commit()
-        return True
-    return False
+async def delete_user(db: AsyncSession, db_user: User) -> bool:
+    await db.delete(db_user)
+    await db.commit()
+    return True
