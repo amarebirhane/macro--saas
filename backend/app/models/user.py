@@ -20,6 +20,6 @@ class User(UserBase, table=True):
     )
     hashed_password: str = Field(nullable=False)
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=datetime.utcnow,
         nullable=False
     )
