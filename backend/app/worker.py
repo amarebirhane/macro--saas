@@ -49,6 +49,13 @@ async def send_password_reset_email_task(ctx: dict, email: str, name: str, link:
     )
     return True
 
+async def database_backup_task(ctx: dict) -> bool:
+    """
+    Scheduled task to backup the database.
+    """
+    await run_database_backup()
+    return True
+
 
 async def startup(ctx: dict) -> None:
     print("ARQ Worker Starting up...")
