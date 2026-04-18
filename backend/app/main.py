@@ -76,11 +76,23 @@ app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
 async def startup_event():
     await init_db()
 
-    # Initialize Redis Cache
-    redis = aioredis.from_url(
-        settings.REDIS_URL, encoding="utf8", decode_responses=True
-    )
-    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+    # Initialize Redis Cache with error handling
+    try:
+        redis = aioredis.from_url(
+            settings.REDIS_URL, encoding="utf8", decode_responses=True
+        )
+        # Verify connection
+        await redis.ping()
+        FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+        logger.info("Successfully connected to Redis.")
+    except Exception as e:
+        logger.error("!!! CRITICAL: Failed to connect to Redis !!!")
+        logger.error(f"Error: {e}")
+        if settings.ENVIRONMENT == "production":
+            logger.error("Aborting startup in production mode due to missing Redis.")
+            raise e
+        else:
+            logger.warning("Continuing in development mode without Redis cache. Expect degraded performance.")
 
 
 @app.get("/")

@@ -873,3 +873,102 @@ redis.exceptions.ConnectionError: Error 10061 connecting to localhost:6379. No c
 2026-04-18 12:42:21,660 | WARNING  | arq.connections:create_pool:284 - redis connection error localhost:6379 TimeoutError Timeout connecting to server, 1 retries remaining...
 2026-04-18 12:42:23,737 | INFO     | httpx:_send_single_request:1773 - HTTP Request: POST http://test/api/v1/auth/register "HTTP/1.1 201 Created"
 2026-04-18 12:42:24,810 | INFO     | httpx:_send_single_request:1773 - HTTP Request: POST http://test/api/v1/auth/login "HTTP/1.1 401 Unauthorized"
+2026-04-18 15:20:58,799 | ERROR    | app:dispatch:40 - Request failed: POST /api/v1/auth/login - Error: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2026-04-18 15:20:59,026 | ERROR    | app:dispatch:43 - Traceback (most recent call last):
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\streams\memory.py", line 98, in receive
+    return self.receive_nowait()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\streams\memory.py", line 93, in receive_nowait
+    raise WouldBlock
+anyio.WouldBlock
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\base.py", line 159, in call_next
+    message = await recv_stream.receive()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\streams\memory.py", line 118, in receive
+    raise EndOfStream
+anyio.EndOfStream
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ASHROCK\Desktop\Micro-SaaS\backend\app\api\middleware.py", line 34, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\base.py", line 165, in call_next
+    raise app_exc
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\Desktop\Micro-SaaS\backend\app\api\middleware.py", line 23, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\base.py", line 165, in call_next
+    raise app_exc
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py", line 758, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py", line 778, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py", line 299, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py", line 79, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py", line 74, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 278, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\slowapi\extension.py", line 732, in async_wrapper
+    self._check_request_limit(request, func, False)
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\slowapi\extension.py", line 630, in _check_request_limit
+    self.__evaluate_limits(request, _endpoint_key, all_limits)
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\slowapi\extension.py", line 509, in __evaluate_limits
+    if not self.limiter.hit(lim.limit, *args, cost=cost):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\limits\strategies.py", line 138, in hit
+    self.storage.incr(
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\limits\storage\base.py", line 27, in inner
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\limits\storage\redis.py", line 209, in incr
+    return int(self.lua_incr_expire([key], [expiry, amount]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\commands\core.py", line 5851, in __call__
+    return client.evalsha(self.sha, len(keys), *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\commands\core.py", line 5238, in evalsha
+    return self._evalsha("EVALSHA", sha, numkeys, *keys_and_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\commands\core.py", line 5222, in _evalsha
+    return self.execute_command(command, sha, numkeys, *keys_and_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\client.py", line 1266, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\connection.py", line 1461, in get_connection
+    connection.connect()
+  File "C:\Users\ASHROCK\AppData\Local\Programs\Python\Python312\Lib\site-packages\redis\connection.py", line 713, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+
