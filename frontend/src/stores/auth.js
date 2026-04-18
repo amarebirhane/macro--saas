@@ -20,7 +20,11 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       this.error = null
       try {
-        const data = await authService.login(credentials)
+        const payload = {
+          username_or_email: credentials.email || credentials.username_or_email,
+          password: credentials.password
+        }
+        const data = await authService.login(payload)
         this.token = data.access_token
         
         if (rememberMe) {
