@@ -1,19 +1,27 @@
 import api from './api'
 
-export default {
-  login(credentials) {
-    const params = new URLSearchParams()
-    params.append('username', credentials.email)
-    params.append('password', credentials.password)
+export const authService = {
+  async login(credentials) {
+    // Standard OAuth2 Form Data for FastAPI
+    const formData = new URLSearchParams()
+    formData.append('username', credentials.email)
+    formData.append('password', credentials.password)
     
-    return api.post('/auth/login', params, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    const response = await api.post('/auth/login', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
     })
+    return response.data
   },
-  register(userData) {
-    return api.post('/auth/register', userData)
+
+  async register(userData) {
+    const response = await api.post('/auth/register', userData)
+    return response.data
   },
-  getMe() {
-    return api.get('/auth/me')
+
+  async getMe() {
+    const response = await api.get('/auth/me')
+    return response.data
   }
 }
