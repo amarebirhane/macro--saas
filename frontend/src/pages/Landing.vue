@@ -96,7 +96,10 @@
       <div class="container">
         <div class="footer-grid">
           <div class="footer-brand">
-            <div class="brand">⚡ Micro-SaaS</div>
+            <div class="brand">
+              <img src="/logo.png" alt="Flash-SaaS" class="logo-img" />
+              <span>Flash-SaaS</span>
+            </div>
             <p>Empowering developers to build faster.</p>
           </div>
           <div class="footer-links">
@@ -192,6 +195,15 @@ const plans = [
   font-size: 1.5rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .auth-links {
