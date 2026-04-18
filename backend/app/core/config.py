@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     EMAILS_FROM_NAME: Optional[str] = None
     
     REDIS_URL: str = "redis://localhost:6379/0"
+    
+    # Observability
+    SENTRY_DSN: Optional[str] = None
+    ENVIRONMENT: str = "development"
 
     class Config:
         env_file = ".env"
