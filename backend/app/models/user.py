@@ -1,8 +1,11 @@
-from sqlmodel import SQLModel, Field
-from typing import Optional
-from datetime import datetime, timezone
 import uuid
+from datetime import datetime
+from typing import Optional
+
+from sqlmodel import Field, SQLModel
+
 from app.models.role import UserRole
+
 
 class UserBase(SQLModel):
     email: str = Field(unique=True, index=True, nullable=False)
@@ -13,17 +16,12 @@ class UserBase(SQLModel):
     is_active: bool = Field(default=True)
     is_verified: bool = Field(default=False)
 
+
 class User(UserBase, table=True):
     __tablename__ = "users"
 
     id: uuid.UUID = Field(
-        default_factory=uuid.uuid4,
-        primary_key=True,
-        index=True,
-        nullable=False
+        default_factory=uuid.uuid4, primary_key=True, index=True, nullable=False
     )
     hashed_password: str = Field(nullable=False)
-    created_at: datetime = Field(
-        default_factory=datetime.utcnow,
-        nullable=False
-    )
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)

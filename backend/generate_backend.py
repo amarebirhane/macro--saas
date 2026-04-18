@@ -2,12 +2,16 @@ import os
 
 base = r"c:\Users\ASHROCK\Desktop\Micro-SaaS\backend"
 
+
 def write(path, content):
     os.makedirs(os.path.dirname(os.path.join(base, path)), exist_ok=True)
     with open(os.path.join(base, path), "w", encoding="utf-8") as f:
         f.write(content.strip() + "\n")
 
-write("requirements.txt", """
+
+write(
+    "requirements.txt",
+    """
 fastapi==0.110.0
 uvicorn==0.28.0
 sqlalchemy==2.0.28
@@ -18,16 +22,22 @@ alembic==1.13.1
 passlib[bcrypt]==1.7.4
 python-jose[cryptography]==3.3.0
 python-multipart==0.0.9
-""")
+""",
+)
 
-write(".env", """
+write(
+    ".env",
+    """
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/microsaas
 SECRET_KEY=super_secret_jwt_key_change_in_production
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
-""")
+""",
+)
 
-write("app/core/config.py", """
+write(
+    "app/core/config.py",
+    """
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -41,9 +51,12 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 settings = Settings()
-""")
+""",
+)
 
-write("app/core/database.py", """
+write(
+    "app/core/database.py",
+    """
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 from app.core.config import settings
@@ -56,9 +69,12 @@ Base = declarative_base()
 async def get_db():
     async with AsyncSessionLocal() as session:
         yield session
-""")
+""",
+)
 
-write("app/models/user.py", """
+write(
+    "app/models/user.py",
+    """
 from sqlalchemy import Column, String, Boolean, DateTime
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -73,9 +89,12 @@ class User(Base):
     role = Column(String, default="USER", nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-""")
+""",
+)
 
-write("app/schemas/user.py", """
+write(
+    "app/schemas/user.py",
+    """
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
@@ -103,9 +122,12 @@ class UserAdminUpdate(BaseModel):
     email: Optional[EmailStr] = None
     role: Optional[str] = None
     is_active: Optional[bool] = None
-""")
+""",
+)
 
-write("app/schemas/auth.py", """
+write(
+    "app/schemas/auth.py",
+    """
 from pydantic import BaseModel
 from typing import Optional
 
@@ -116,9 +138,12 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     email: Optional[str] = None
     role: Optional[str] = None
-""")
+""",
+)
 
-write("app/utils/hashing.py", """
+write(
+    "app/utils/hashing.py",
+    """
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -128,9 +153,12 @@ def verify_password(plain_password, hashed_password):
 
 def get_password_hash(password):
     return pwd_context.hash(password)
-""")
+""",
+)
 
-write("app/core/security.py", """
+write(
+    "app/core/security.py",
+    """
 from datetime import datetime, timedelta
 from jose import jwt
 from app.core.config import settings
@@ -144,13 +172,19 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
-""")
+""",
+)
 
-write("app/models/__init__.py", """
+write(
+    "app/models/__init__.py",
+    """
 from app.models.user import User
-""")
+""",
+)
 
-write("app/api/deps.py", """
+write(
+    "app/api/deps.py",
+    """
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
@@ -177,7 +211,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         token_data = TokenData(email=email, role=role)
     except JWTError:
         raise credentials_exception
-        
+
     user = await get_user_by_email(db, email=token_data.email)
     if user is None:
         raise credentials_exception
@@ -192,14 +226,17 @@ def require_role(required_role: str):
     async def role_checker(current_user = Depends(get_current_active_user)):
         if current_user.role != required_role and current_user.role != "ADMIN":
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, 
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not enough permissions"
             )
         return current_user
     return role_checker
-""")
+""",
+)
 
-write("app/services/user_service.py", """
+write(
+    "app/services/user_service.py",
+    """
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.models.user import User
@@ -258,9 +295,12 @@ async def delete_user(db: AsyncSession, user_id: str):
         await db.commit()
         return True
     return False
-""")
+""",
+)
 
-write("app/services/auth_service.py", """
+write(
+    "app/services/auth_service.py",
+    """
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.user_service import get_user_by_email
 from app.utils.hashing import verify_password
@@ -272,9 +312,12 @@ async def authenticate_user(db: AsyncSession, email: str, password: str):
     if not verify_password(password, user.hashed_password):
         return False
     return user
-""")
+""",
+)
 
-write("app/api/v1/endpoints/auth.py", """
+write(
+    "app/api/v1/endpoints/auth.py",
+    """
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -310,9 +353,12 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
 @router.get("/me", response_model=UserOut)
 async def read_users_me(current_user = Depends(get_current_active_user)):
     return current_user
-""")
+""",
+)
 
-write("app/api/v1/endpoints/users.py", """
+write(
+    "app/api/v1/endpoints/users.py",
+    """
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
@@ -328,14 +374,17 @@ async def read_user_me(current_user = Depends(get_current_active_user)):
 
 @router.put("/me", response_model=UserOut)
 async def update_user_me(
-    user_in: UserUpdate, 
-    current_user = Depends(get_current_active_user), 
+    user_in: UserUpdate,
+    current_user = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
     return await update_user(db, current_user, user_in)
-""")
+""",
+)
 
-write("app/api/v1/endpoints/admin.py", """
+write(
+    "app/api/v1/endpoints/admin.py",
+    """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -352,8 +401,8 @@ async def read_all_users(db: AsyncSession = Depends(get_db)):
 
 @router.put("/users/{user_id}", response_model=UserOut, dependencies=[Depends(require_role("ADMIN"))])
 async def update_user_by_admin(
-    user_id: str, 
-    user_in: UserAdminUpdate, 
+    user_id: str,
+    user_in: UserAdminUpdate,
     db: AsyncSession = Depends(get_db)
 ):
     user = await admin_update_user(db, user_id, user_in)
@@ -377,9 +426,12 @@ async def get_analytics(db: AsyncSession = Depends(get_db)):
         "admins": len([u for u in users if u.role == "ADMIN"]),
         "regular_users": len([u for u in users if u.role == "USER"])
     }
-""")
+""",
+)
 
-write("app/api/v1/api.py", """
+write(
+    "app/api/v1/api.py",
+    """
 from fastapi import APIRouter
 from app.api.v1.endpoints import auth, users, admin
 
@@ -387,9 +439,12 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["Auth"])
 api_router.include_router(users.router, prefix="/users", tags=["Users"])
 api_router.include_router(admin.router, prefix="/admin", tags=["Admin"])
-""")
+""",
+)
 
-write("app/main.py", """
+write(
+    "app/main.py",
+    """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.api import api_router
@@ -410,7 +465,7 @@ app.include_router(api_router, prefix="/api/v1")
 
 @app.on_event("startup")
 async def startup_event():
-    # Only for development without alembic. 
+    # Only for development without alembic.
     # Use alembic for production migrations!
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -421,6 +476,7 @@ def root():
         "message": "Welcome to the Micro-SaaS API",
         "docs": "/docs",
     }
-""")
+""",
+)
 
 print("Successfully generated backend codebase.")

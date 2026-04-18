@@ -1,8 +1,11 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
-from datetime import datetime
 import uuid
+from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, EmailStr
+
 from app.models.role import UserRole
+
 
 class UserRead(BaseModel):
     id: uuid.UUID
@@ -17,6 +20,7 @@ class UserRead(BaseModel):
     class Config:
         from_attributes = True
 
+
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
@@ -25,6 +29,7 @@ class UserCreate(BaseModel):
     last_name: str
     role: Optional[UserRole] = UserRole.USER
 
+
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     username: Optional[str] = None
@@ -32,6 +37,7 @@ class UserUpdate(BaseModel):
     last_name: Optional[str] = None
     password: Optional[str] = None
     is_active: Optional[bool] = None
+
 
 class UserAdminUpdate(BaseModel):
     email: Optional[EmailStr] = None

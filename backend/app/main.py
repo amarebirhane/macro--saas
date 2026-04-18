@@ -1,21 +1,21 @@
-from fastapi import FastAPI
+import sentry_sdk
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import auth, users, admin
-from app.core.config import settings
-from app.core.database import init_db
-from app.core.logging_config import setup_logging
-from app.api.middleware import GlobalExceptionHandlerMiddleware
-from app.core.rate_limit import limiter
-from slowapi.errors import RateLimitExceeded
-from slowapi import _rate_limit_exceeded_handler
-from redis import asyncio as aioredis
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
-import sentry_sdk
+from redis import asyncio as aioredis
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
-from fastapi import Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.api import deps
+from app.api.middleware import GlobalExceptionHandlerMiddleware
+from app.api.routes import admin, auth, users
+from app.core.config import settings
+from app.core.database import init_db
+from app.core.logging_config import logger, setup_logging
+from app.core.rate_limit import limiter
 
 # Initialize Logging
 setup_logging()
@@ -28,10 +28,7 @@ if settings.SENTRY_DSN:
         traces_sample_rate=1.0,
     )
 
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    openapi_url="/openapi.json"
-)
+app = FastAPI(title=settings.PROJECT_NAME, openapi_url="/openapi.json")
 
 # Add Rate Limiting
 app.state.limiter = limiter
@@ -54,33 +51,40 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
 
+
 @app.on_event("startup")
 async def startup_event():
     await init_db()
-    
+
     # Initialize Redis Cache
-    redis = aioredis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
+    redis = aioredis.from_url(
+        settings.REDIS_URL, encoding="utf8", decode_responses=True
+    )
     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+
 
 @app.get("/")
 def root():
     return {
         "message": "Welcome to the Micro-SaaS API",
         "docs": "/docs",
-        "version": "1.0.0"
+        "version": "1.0.0",
     }
+
 
 @app.get("/health", tags=["Health"])
 async def health_check(db: AsyncSession = Depends(deps.get_session)):
     """Health check endpoint validating application and database state."""
     try:
+        # Added timeout to prevent health check from hanging
         await db.execute(text("SELECT 1"))
         db_status = "healthy"
     except Exception as e:
+        logger.error(f"Health check database failure: {str(e)}")
         db_status = f"unhealthy: {str(e)}"
-        
+
     return {
         "status": "online",
         "environment": settings.ENVIRONMENT,
-        "database": db_status
+        "database": db_status,
     }
