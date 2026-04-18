@@ -6,7 +6,6 @@ from app.core.rate_limit import limiter
 from app.schemas.auth import (
     LoginRequest,
     PasswordResetConfirm,
-    PasswordResetRequest,
     RefreshTokenRequest,
     Token,
 )

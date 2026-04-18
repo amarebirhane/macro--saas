@@ -1,5 +1,3 @@
-import asyncio
-from typing import Any
 from urllib.parse import urlparse
 
 from arq.connections import RedisSettings

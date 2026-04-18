@@ -26,18 +26,18 @@ async def register_user(db: AsyncSession, user_in: UserCreate) -> User:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User with this email already exists",
         )
-    
+
     new_user = await user_service.create_user(db, user_in=user_in)
-    
+
     # Queue welcome and verification emails
     try:
         arq_pool = await get_arq_pool()
         await arq_pool.enqueue_job(
-            "send_welcome_email_task", 
-            email=new_user.email, 
+            "send_welcome_email_task",
+            email=new_user.email,
             name=f"{new_user.first_name or ''} {new_user.last_name or ''}".strip() or new_user.username
         )
-        
+
         verify_token_str = create_verification_token(subject=new_user.id)
         verify_link = f"{settings.FRONTEND_URL}/verify-email?token={verify_token_str}"
         await arq_pool.enqueue_job(
@@ -49,7 +49,7 @@ async def register_user(db: AsyncSession, user_in: UserCreate) -> User:
     except Exception as e:
         # Don't fail registration if email queuing fails, but log it
         print(f"Failed to queue emails for user {new_user.email}: {e}")
-        
+
     return new_user
 
 
@@ -57,12 +57,12 @@ async def verify_email_token(db: AsyncSession, token: str) -> bool:
     payload = verify_token(token, token_type="verification")
     if not payload:
         raise HTTPException(status_code=400, detail="Invalid or expired verification token")
-    
+
     user_id = payload.get("sub")
     user = await user_service.get_user_by_id(db, user_id=uuid.UUID(user_id))
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     user.is_verified = True
     db.add(user)
     await db.commit()
@@ -74,10 +74,10 @@ async def request_password_reset(db: AsyncSession, email: str) -> bool:
     if not user:
         # For security, we don't reveal if the user exists
         return True
-    
+
     reset_token = create_password_reset_token(subject=user.id)
     reset_link = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
-    
+
     try:
         arq_pool = await get_arq_pool()
         await arq_pool.enqueue_job(
@@ -89,7 +89,7 @@ async def request_password_reset(db: AsyncSession, email: str) -> bool:
     except Exception as e:
         print(f"Failed to queue password reset email for {email}: {e}")
         return False
-        
+
     return True
 
 
@@ -97,12 +97,12 @@ async def reset_password(db: AsyncSession, token: str, new_password: str) -> boo
     payload = verify_token(token, token_type="reset")
     if not payload:
         raise HTTPException(status_code=400, detail="Invalid or expired reset token")
-    
+
     user_id = payload.get("sub")
     user = await user_service.get_user_by_id(db, user_id=uuid.UUID(user_id))
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     user.hashed_password = get_password_hash(new_password)
     db.add(user)
     await db.commit()

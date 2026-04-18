@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.core.database import engine
-from app.utils.hashing import get_password_hash
 from app.models.user import User
+from app.utils.hashing import get_password_hash
 
 
 async def seed_data():

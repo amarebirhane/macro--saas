@@ -1,7 +1,10 @@
+from urllib.parse import urlparse
+
 from arq import create_pool
 from arq.connections import RedisSettings
-from urllib.parse import urlparse
+
 from app.core.config import settings
+
 
 async def get_arq_pool():
     parsed_url = urlparse(settings.REDIS_URL)

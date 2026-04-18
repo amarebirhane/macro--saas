@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
+
 from app.core.config import settings
 
 conf = ConnectionConfig(
