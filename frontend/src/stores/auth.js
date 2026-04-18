@@ -4,7 +4,7 @@ import { authService } from '../services/authService'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
-    token: localStorage.getItem('token') || null,
+    token: localStorage.getItem('token') || sessionStorage.getItem('token') || null,
     loading: false,
     error: null
   }),
@@ -16,13 +16,21 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async login(credentials) {
+    async login(credentials, rememberMe = false) {
       this.loading = true
       this.error = null
       try {
         const data = await authService.login(credentials)
         this.token = data.access_token
-        localStorage.setItem('token', this.token)
+        
+        if (rememberMe) {
+          localStorage.setItem('token', this.token)
+          sessionStorage.removeItem('token')
+        } else {
+          sessionStorage.setItem('token', this.token)
+          localStorage.removeItem('token')
+        }
+        
         await this.fetchUser()
         return true
       } catch (err) {
@@ -38,8 +46,8 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       try {
         await authService.register(userData)
-        // Auto login after registration
-        return await this.login({ email: userData.email, password: userData.password })
+        // Auto login after registration (session only by default)
+        return await this.login({ email: userData.email, password: userData.password }, false)
       } catch (err) {
         this.error = err.response?.data?.detail || 'Registration failed'
         throw err
@@ -62,6 +70,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       this.token = null
       localStorage.removeItem('token')
+      sessionStorage.removeItem('token')
     }
   }
 })
