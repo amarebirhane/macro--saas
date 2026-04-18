@@ -2,9 +2,9 @@
   <div class="dashboard-page fade-in">
     <section class="welcome-section card glass">
       <div class="welcome-text">
-        <h2>Greetings, {{ userEmail }}!</h2>
-        <p>Welcome to your personal command center. Here's what's happening today.</p>
-        <div v-if="authStore.isAdmin" class="admin-chip">Administrator</div>
+        <h2>Greetings, {{ userName }}!</h2>
+        <p>Welcome to your personal command center. Here's a look at your account activity.</p>
+        <div v-if="authStore.isAdmin" class="admin-chip">Administrator Access</div>
       </div>
       <div class="welcome-image">🚀</div>
     </section>
