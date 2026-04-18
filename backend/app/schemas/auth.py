@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional
 from app.models.role import UserRole
 
@@ -11,5 +11,5 @@ class TokenData(BaseModel):
     role: Optional[UserRole] = None
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    username_or_email: str
     password: str

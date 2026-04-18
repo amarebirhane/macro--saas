@@ -17,6 +17,11 @@ async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> Optional[User]
     result = await db.execute(statement)
     return result.scalars().first()
 
+async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
+    statement = select(User).where(User.username == username)
+    result = await db.execute(statement)
+    return result.scalars().first()
+
 async def get_users_paginated(db: AsyncSession, skip: int = 0, limit: int = 100) -> tuple[List[User], int]:
     # Get total count
     count_statement = select(func.count()).select_from(User)
