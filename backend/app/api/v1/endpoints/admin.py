@@ -3,16 +3,31 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from app.core.database import get_db
 from app.schemas.user import UserOut, UserAdminUpdate
+from app.schemas.common import PaginatedResponse
 from app.api.deps import require_role
-from app.services.user_service import get_all_users, admin_update_user, delete_user
+from app.services.user_service import get_users_paginated, admin_update_user, delete_user
 from app.services.audit_service import audit_service
 from app.api.deps import get_current_user
+import math
 
 router = APIRouter()
 
-@router.get("/users", response_model=List[UserOut], dependencies=[Depends(require_role("ADMIN"))])
-async def read_all_users(db: AsyncSession = Depends(get_db)):
-    return await get_all_users(db)
+@router.get("/users", response_model=PaginatedResponse[UserOut], dependencies=[Depends(require_role("ADMIN"))])
+async def read_users(
+    page: int = 1,
+    size: int = 20,
+    db: AsyncSession = Depends(get_db)
+):
+    skip = (page - 1) * size
+    items, total = await get_users_paginated(db, skip=skip, limit=size)
+    
+    return PaginatedResponse(
+        items=items,
+        total=total,
+        page=page,
+        size=size,
+        pages=math.ceil(total / size) if total > 0 else 1
+    )
 
 @router.put("/users/{user_id}", response_model=UserOut, dependencies=[Depends(require_role("ADMIN"))])
 async def update_user_by_admin(
