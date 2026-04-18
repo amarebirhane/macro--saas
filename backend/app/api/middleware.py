@@ -1,11 +1,30 @@
 import time
 import traceback
+import uuid
+from contextvars import ContextVar
 
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.core.logging_config import logger
+
+# Context Variable to store correlation ID
+correlation_id_ctx: ContextVar[str] = ContextVar("correlation_id", default="")
+
+
+class CorrelationIdMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Check if the request already has a header, otherwise generate new one
+        correlation_id = request.headers.get("X-Correlation-ID", str(uuid.uuid4()))
+        token = correlation_id_ctx.set(correlation_id)
+        
+        try:
+            response = await call_next(request)
+            response.headers["X-Correlation-ID"] = correlation_id
+            return response
+        finally:
+            correlation_id_ctx.reset(token)
 
 
 class GlobalExceptionHandlerMiddleware(BaseHTTPMiddleware):
