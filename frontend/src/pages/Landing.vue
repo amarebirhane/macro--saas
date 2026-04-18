@@ -3,7 +3,10 @@
     <!-- Navbar -->
     <nav class="landing-nav glass">
       <div class="container">
-        <div class="brand">⚡ Micro-SaaS</div>
+        <div class="brand">
+          <img src="/logo.png" alt="Flash-SaaS" class="logo-img" />
+          <span>Flash-Saas</span>
+        </div>
         <div class="auth-links">
           <router-link :to="{ name: 'login' }" class="nav-link">Login</router-link>
           <router-link :to="{ name: 'register' }" class="btn btn-primary shadow-glow">Get Started</router-link>
