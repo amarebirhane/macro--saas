@@ -1,5 +1,6 @@
 import asyncio
-from sqlmodel import Session, select
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import engine
 from app.models.user import User
 from app.utils.hashing import get_password_hash
@@ -8,10 +9,11 @@ from datetime import datetime, timedelta
 async def seed_data():
     print("Starting database seeding...")
     
-    with Session(engine) as session:
+    async with AsyncSession(engine) as session:
         # 1. Create Admin
         admin_email = "admin@macro.com"
-        admin_exists = session.exec(select(User).where(User.email == admin_email)).first()
+        result = await session.execute(select(User).where(User.email == admin_email))
+        admin_exists = result.scalar_one_or_none()
         
         if not admin_exists:
             admin = User(
@@ -28,7 +30,8 @@ async def seed_data():
         # 2. Create Dummy Users
         for i in range(1, 11):
             user_email = f"user{i}@macro.com"
-            user_exists = session.exec(select(User).where(User.email == user_email)).first()
+            result = await session.execute(select(User).where(User.email == user_email))
+            user_exists = result.scalar_one_or_none()
             
             if not user_exists:
                 user = User(
@@ -41,7 +44,7 @@ async def seed_data():
                 session.add(user)
                 print(f"Created User: {user_email}")
         
-        session.commit()
+        await session.commit()
     
     print("Seeding complete!")
 
