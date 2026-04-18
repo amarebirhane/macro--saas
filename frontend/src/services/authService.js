@@ -2,16 +2,9 @@ import api from './api'
 
 export const authService = {
   async login(credentials) {
-    // Standard OAuth2 Form Data for FastAPI
-    const formData = new URLSearchParams()
-    formData.append('username', credentials.email)
-    formData.append('password', credentials.password)
-    
-    const response = await api.post('/auth/login', formData, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    })
+    // We now use a JSON payload for LoginRequest
+    // 'credentials' already contains { username_or_email, password } from the store/component
+    const response = await api.post('/auth/login', credentials)
     return response.data
   },
 
