@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
 from app.core.rate_limit import limiter
+from app.models.user import User
 from app.schemas.auth import (
     ChangePasswordRequest,
     LoginRequest,
@@ -28,9 +29,10 @@ async def register(
         await audit_service.create_log(
             db, action="REGISTER", resource=f"user:{user.id}", user_id=user.id
         )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
-        # Don't fail the request if audit logging fails
-        print(f"Audit log failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to process image.") from e
     return user
 
 
