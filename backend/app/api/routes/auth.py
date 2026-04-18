@@ -114,6 +114,23 @@ async def reset_password(
     return {"message": "Password reset successfully"}
 
 
+@router.post("/test-email", status_code=status.HTTP_200_OK, tags=["Testing"])
+async def test_email(
+    email: str,
+):
+    """
+    Diagnostic endpoint to send a test welcome email using the background worker.
+    """
+    from app.core.redis import get_arq_pool
+    arq_pool = await get_arq_pool()
+    await arq_pool.enqueue_job(
+        "send_welcome_email_task",
+        email=email,
+        name="Test User"
+    )
+    return {"message": f"Test email queued for {email}. Check your console/worker logs!"}
+
+
 @router.get("/me", response_model=UserRead)
 async def get_me(current_user=Depends(deps.get_current_user)):
     return current_user
