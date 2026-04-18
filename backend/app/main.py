@@ -5,15 +5,25 @@ from app.core.config import settings
 from app.core.database import init_db
 from app.core.logging_config import setup_logging
 from app.api.middleware import GlobalExceptionHandlerMiddleware
-from app.core.rate_limit import limiter
-from slowapi.errors import RateLimitExceeded
-from slowapi import _rate_limit_exceeded_handler
 from redis import asyncio as aioredis
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
+import sentry_sdk
+from sqlalchemy import text
+from fastapi import Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.api import deps
 
 # Initialize Logging
 setup_logging()
+
+# Initialize Sentry APM
+if settings.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        environment=settings.ENVIRONMENT,
+        traces_sample_rate=1.0,
+    )
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -55,4 +65,19 @@ def root():
         "message": "Welcome to the Micro-SaaS API",
         "docs": "/docs",
         "version": "1.0.0"
+    }
+
+@app.get("/health", tags=["Health"])
+async def health_check(db: AsyncSession = Depends(deps.get_session)):
+    """Health check endpoint validating application and database state."""
+    try:
+        await db.execute(text("SELECT 1"))
+        db_status = "healthy"
+    except Exception as e:
+        db_status = f"unhealthy: {str(e)}"
+        
+    return {
+        "status": "online",
+        "environment": settings.ENVIRONMENT,
+        "database": db_status
     }

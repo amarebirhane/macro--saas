@@ -7,14 +7,23 @@ def setup_logging():
     log_dir = Path("logs")
     log_dir.mkdir(exist_ok=True)
 
+    # Configure JSON formatting
+    from pythonjsonlogger import jsonlogger
+    
+    logHandler = logging.StreamHandler(sys.stdout)
+    formatter = jsonlogger.JsonFormatter(
+        "%(asctime)s %(levelname)s %(name)s %(funcName)s %(lineno)d %(message)s"
+    )
+    logHandler.setFormatter(formatter)
+    
+    fileHandler = logging.FileHandler(log_dir / "app.log")
+    fileFormatter = logging.Formatter("%(asctime)s | %(levelname)-8s | %(name)s:%(funcName)s:%(funcName)s:%(lineno)d - %(message)s")
+    fileHandler.setFormatter(fileFormatter)
+
     # Configure logging
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s | %(levelname)-8s | %(name)s:%(funcName)s:%(line_no)d - %(message)s",
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-            logging.FileHandler(log_dir / "app.log")
-        ]
+        handlers=[logHandler, fileHandler]
     )
 
     # Set specific levels for noisy libraries
