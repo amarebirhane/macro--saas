@@ -7,15 +7,15 @@
 
     <form @submit.prevent="handleLogin" class="auth-form">
       <div class="form-group">
-        <label>Email Address</label>
+        <label>Email or Username</label>
         <input
-          id="login-email"
-          type="email"
-          v-model="email"
+          id="login-identifier"
+          type="text"
+          v-model="identifier"
           required
-          placeholder="name@company.com"
+          placeholder="email@company.com or username"
           :disabled="authStore.loading"
-          autocomplete="email"
+          autocomplete="username"
         />
       </div>
 
