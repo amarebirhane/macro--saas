@@ -78,10 +78,11 @@ async def get_analytics(
         resource="system:analytics",
         user_id=current_user.id
     )
-    users = await get_all_users(db)
+    # Fetch a reasonable number of users for stats, or optimize with specific count queries in production
+    users, total = await get_users_paginated(db, limit=1000)
     return {
-        "total_users": len(users),
+        "total_users": total,
         "active_users": len([u for u in users if u.is_active]),
-        "admins": len([u for u in users if u.role == "ADMIN"]),
+        "admin_count": len([u for u in users if u.role == "ADMIN"]),
         "regular_users": len([u for u in users if u.role == "USER"])
     }
