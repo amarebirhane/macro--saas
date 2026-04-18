@@ -5,17 +5,18 @@
         <component :is="Component" />
       </transition>
     </router-view>
+    <Toast />
   </div>
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
 import { useAuthStore } from './stores/auth'
+import Toast from './components/Toast.vue'
 
 const authStore = useAuthStore()
 
 onMounted(async () => {
-  // Check if user is logged in on app start
   if (authStore.isAuthenticated) {
     await authStore.fetchUser()
   }
