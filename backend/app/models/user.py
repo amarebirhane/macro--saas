@@ -15,6 +15,7 @@ class UserBase(SQLModel):
     role: UserRole = Field(default=UserRole.USER, nullable=False)
     is_active: bool = Field(default=True)
     is_verified: bool = Field(default=False)
+    deleted_at: Optional[datetime] = Field(default=None, nullable=True)
 
 
 class User(UserBase, table=True):

@@ -11,19 +11,19 @@ from app.utils.hashing import get_password_hash
 
 
 async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
-    statement = select(User).where(User.email == email)
+    statement = select(User).where(User.email == email, User.deleted_at == None)
     result = await db.execute(statement)
     return result.scalars().first()
 
 
 async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> Optional[User]:
-    statement = select(User).where(User.id == user_id)
+    statement = select(User).where(User.id == user_id, User.deleted_at == None)
     result = await db.execute(statement)
     return result.scalars().first()
 
 
 async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
-    statement = select(User).where(User.username == username)
+    statement = select(User).where(User.username == username, User.deleted_at == None)
     result = await db.execute(statement)
     return result.scalars().first()
 
@@ -32,12 +32,12 @@ async def get_users_paginated(
     db: AsyncSession, skip: int = 0, limit: int = 100
 ) -> tuple[List[User], int]:
     # Get total count
-    count_statement = select(func.count()).select_from(User)
+    count_statement = select(func.count()).select_from(User).where(User.deleted_at == None)
     count_result = await db.execute(count_statement)
     total = count_result.scalar() or 0
 
     # Get paginated items
-    statement = select(User).offset(skip).limit(limit)
+    statement = select(User).where(User.deleted_at == None).offset(skip).limit(limit)
     result = await db.execute(statement)
     items = result.scalars().all()
 
@@ -46,7 +46,7 @@ async def get_users_paginated(
 
 async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[User]:
     # Deprecated for paginated version but kept for compatibility if needed
-    statement = select(User).offset(skip).limit(limit)
+    statement = select(User).where(User.deleted_at == None).offset(skip).limit(limit)
     result = await db.execute(statement)
     return result.scalars().all()
 
@@ -99,6 +99,8 @@ async def admin_update_user(
 
 
 async def delete_user(db: AsyncSession, db_user: User) -> bool:
-    await db.delete(db_user)
+    from datetime import datetime
+    db_user.deleted_at = datetime.utcnow()
+    db.add(db_user)
     await db.commit()
     return True
