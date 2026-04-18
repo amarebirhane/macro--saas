@@ -11,7 +11,7 @@ from app.schemas.auth import (
     RefreshTokenRequest,
     Token,
 )
-from app.schemas.user import UserRead
+from app.schemas.user import UserCreate, UserRead
 from app.services import auth_service
 from app.services.audit_service import audit_service
 from app.services.user_service import get_user_by_email, get_user_by_username
