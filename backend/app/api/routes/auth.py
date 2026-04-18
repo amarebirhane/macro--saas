@@ -4,8 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import deps
 from app.core.rate_limit import limiter
 from app.schemas.auth import (
+    ChangePasswordRequest,
     LoginRequest,
     PasswordResetConfirm,
+    PasswordResetRequest,
     RefreshTokenRequest,
     Token,
 )
@@ -112,6 +114,21 @@ async def reset_password(
         db, token=reset_data.token, new_password=reset_data.new_password
     )
     return {"message": "Password reset successfully"}
+
+
+@router.post("/change-password", status_code=status.HTTP_200_OK)
+async def change_password(
+    data: ChangePasswordRequest,
+    current_user: User = Depends(deps.get_current_user),
+    db: AsyncSession = Depends(deps.get_session),
+):
+    """
+    Change password for the currently authenticated user.
+    """
+    await auth_service.change_password(
+        db, user=current_user, old_password=data.old_password, new_password=data.new_password
+    )
+    return {"message": "Password changed successfully"}
 
 
 @router.post("/test-email", status_code=status.HTTP_200_OK, tags=["Testing"])
