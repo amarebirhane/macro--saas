@@ -1,11 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.api import api_router
+from app.api.routes import auth, users, admin
 from app.core.config import settings
-from app.core.database import Base, engine
+from app.core.database import init_db
 
-app = FastAPI(title=settings.PROJECT_NAME)
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    openapi_url="/openapi.json"
+)
 
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,17 +18,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(api_router, prefix="/api/v1")
+# Routers
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(admin.router, prefix="/admin", tags=["Admin"])
 
 @app.on_event("startup")
 async def startup_event():
-    # Automatically sync models for dev (switch to Alembic for prod)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    await init_db()
 
 @app.get("/")
 def root():
     return {
         "message": "Welcome to the Micro-SaaS API",
         "docs": "/docs",
+        "version": "1.0.0"
     }
