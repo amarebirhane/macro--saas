@@ -1,9 +1,11 @@
 from urllib.parse import urlparse
 
+from arq import cron
 from arq.connections import RedisSettings
 
 from app.core.config import settings
 from app.core.email import send_email
+from app.services.backup_service import run_database_backup
 
 
 async def send_welcome_email_task(ctx: dict, email: str, name: str) -> bool:
@@ -65,6 +67,10 @@ class WorkerSettings:
         send_welcome_email_task,
         send_verification_email_task,
         send_password_reset_email_task,
+        database_backup_task,
+    ]
+    cron_jobs = [
+        cron(database_backup_task, hour=0, minute=0),  # Daily at midnight
     ]
     on_startup = startup
     on_shutdown = shutdown
