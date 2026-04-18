@@ -7,7 +7,6 @@ from app.schemas.auth import (
     ChangePasswordRequest,
     LoginRequest,
     PasswordResetConfirm,
-    PasswordResetRequest,
     RefreshTokenRequest,
     Token,
 )

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
@@ -37,18 +37,18 @@ async def upload_avatar(
         # Delete old avatar if exists
         if current_user.avatar_url:
             storage_service.delete_old_avatar(current_user.avatar_url)
-            
+
         # Save new avatar
         filename = await storage_service.save_avatar(file)
-        
+
         # Update user record
         current_user.avatar_url = filename
         db.add(current_user)
         await db.commit()
         await db.refresh(current_user)
-        
+
         return current_user
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=500, detail="Failed to process image.")

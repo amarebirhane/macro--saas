@@ -1,7 +1,8 @@
 import os
 import uuid
-from typing import Optional
 from pathlib import Path
+from typing import Optional
+
 from fastapi import UploadFile
 from PIL import Image
 
@@ -21,14 +22,14 @@ class StorageService:
         extension = file.filename.split(".")[-1].lower()
         if extension not in ["jpg", "jpeg", "png"]:
             raise ValueError("Only JPG and PNG files are allowed.")
-        
+
         # Generate unique filename
         filename = f"{uuid.uuid4()}.{extension}"
         filepath = AVATAR_DIR / filename
-        
+
         # Open image with Pillow
         image = Image.open(file.file)
-        
+
         # Auto-crop to square
         width, height = image.size
         min_dim = min(width, height)
@@ -36,18 +37,18 @@ class StorageService:
         top = (height - min_dim) / 2
         right = (width + min_dim) / 2
         bottom = (height + min_dim) / 2
-        
+
         image = image.crop((left, top, right, bottom))
-        
+
         # Resize to standard size (e.g., 400x400)
         image = image.resize((400, 400), Image.LANCZOS)
-        
+
         # Save
         if extension in ["jpg", "jpeg"]:
             image.save(filepath, "JPEG", quality=85)
         else:
             image.save(filepath, "PNG")
-            
+
         return filename
 
     @staticmethod

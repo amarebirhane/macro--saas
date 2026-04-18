@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
+
 from app.core.config import settings
 from app.core.logging_config import logger
 
@@ -34,7 +35,7 @@ async def send_email(
         template_body=template_body,
         subtype=MessageType.html,
     )
-    
+
     if conf.SUPPRESS_SEND:
         logger.info(f"📧 [DEV MODE] Email suppressed. Subject: {subject}, To: {email_to}")
         logger.info(f"Context: {template_body}")

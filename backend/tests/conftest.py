@@ -1,15 +1,16 @@
 import asyncio
-import pytest
 from typing import AsyncGenerator, Generator
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlmodel import SQLModel
-from asgi_lifespan import LifespanManager
+from unittest.mock import AsyncMock
 
-from app.main import app
+import pytest
+from asgi_lifespan import LifespanManager
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlmodel import SQLModel
+
 from app.api.deps import get_session
 from app.core.redis import get_arq_pool
-from unittest.mock import AsyncMock
+from app.main import app
 
 # SQLite for local testing (fast and isolated)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
@@ -48,7 +49,7 @@ async def db_session(db_setup) -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture
 async def client(db_session) -> AsyncGenerator[AsyncClient, None]:
     """Provide a test client with an overridden database session."""
-    
+
     async def override_get_session():
         yield db_session
 
@@ -57,14 +58,14 @@ async def client(db_session) -> AsyncGenerator[AsyncClient, None]:
 
     app.dependency_overrides[get_session] = override_get_session
     app.dependency_overrides[get_arq_pool] = mock_get_arq_pool
-    
+
     # Disable rate limiting in tests
     app.state.limiter.enabled = False
-    
+
     async with LifespanManager(app):
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             yield ac
-            
+
     app.dependency_overrides.clear()
     app.state.limiter.enabled = True

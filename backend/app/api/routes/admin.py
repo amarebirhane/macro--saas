@@ -76,7 +76,7 @@ async def admin_reset_password(
     db_user = await user_service.get_user_by_id(db, user_id=user_id)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     db_user.hashed_password = get_password_hash(new_password)
     db.add(db_user)
     await db.commit()

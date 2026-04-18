@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
+
 @pytest.mark.asyncio
 async def test_register_user(client: AsyncClient):
     """Test successful user registration."""
@@ -34,7 +35,7 @@ async def test_login_user(client: AsyncClient):
         }
     )
     assert reg_response.status_code == 201
-    
+
     # 2. Login
     response = await client.post(
         "/api/v1/auth/login",
@@ -62,7 +63,7 @@ async def test_login_wrong_password(client: AsyncClient):
             "username": "wronguser"
         }
     )
-    
+
     # 2. Login with wrong password
     response = await client.post(
         "/api/v1/auth/login",
