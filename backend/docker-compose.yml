@@ -7,8 +7,8 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: microsaas
+      POSTGRES_PASSWORD: amare
+      POSTGRES_DB: macro
     ports:
       - "5432:5432"
     volumes:
