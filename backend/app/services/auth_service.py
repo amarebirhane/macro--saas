@@ -16,11 +16,17 @@ async def register_user(db: AsyncSession, user_in: UserCreate) -> User:
     return await user_service.create_user(db, user_in=user_in)
 
 async def authenticate_user(db: AsyncSession, login_data: LoginRequest) -> Token:
-    user = await user_service.get_user_by_email(db, email=login_data.email)
+    # Try finding by email
+    user = await user_service.get_user_by_email(db, email=login_data.username_or_email)
+    
+    # If not found by email, try finding by username
+    if not user:
+        user = await user_service.get_user_by_username(db, username=login_data.username_or_email)
+        
     if not user or not verify_password(login_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Incorrect email/username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     if not user.is_active:
