@@ -11,8 +11,14 @@ services:
       POSTGRES_DB: macro
     ports:
       - "5432:5432"
-    volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: microsaas-redis
+    restart: always
+    ports:
+      - "6379:6379"
 
 volumes:
   postgres_data:
