@@ -8,6 +8,8 @@ from asgi_lifespan import LifespanManager
 
 from app.main import app
 from app.api.deps import get_session
+from app.core.redis import get_arq_pool
+from unittest.mock import AsyncMock
 
 # SQLite for local testing (fast and isolated)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
@@ -50,7 +52,14 @@ async def client(db_session) -> AsyncGenerator[AsyncClient, None]:
     async def override_get_session():
         yield db_session
 
+    async def mock_get_arq_pool():
+        return AsyncMock()
+
     app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[get_arq_pool] = mock_get_arq_pool
+    
+    # Disable rate limiting in tests
+    app.state.limiter.enabled = False
     
     async with LifespanManager(app):
         transport = ASGITransport(app=app)
@@ -58,3 +67,4 @@ async def client(db_session) -> AsyncGenerator[AsyncClient, None]:
             yield ac
             
     app.dependency_overrides.clear()
+    app.state.limiter.enabled = True
