@@ -58,6 +58,18 @@ async def login(
         
     return token
 
+@router.post("/refresh", response_model=Token)
+@limiter.limit("10/minute")
+async def refresh_token(
+    request: Request,
+    token_data: RefreshTokenRequest,
+    db: AsyncSession = Depends(deps.get_session)
+):
+    """
+    Refresh access token using a valid refresh token.
+    """
+    return await auth_service.refresh_access_token(db, refresh_token=token_data.refresh_token)
+
 @router.get("/me", response_model=UserRead)
 async def get_me(current_user=Depends(deps.get_current_user)):
     return current_user
